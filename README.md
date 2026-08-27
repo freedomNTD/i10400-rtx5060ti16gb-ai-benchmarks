@@ -1,6 +1,6 @@
-# Local AI Benchmarks — i5-10400 + RTX 5060 Ti 16GB
+# AI 模型本地实测基准 · i5-10400 + RTX 5060 Ti 16GB
 
-消费级单卡 Windows 平台上各类本地 AI 模型的**实测性能数据集**：LLM 文本生成、文生图、视频生成、TTS/音乐。所有数字均为本机真实跑测记录（2026-08），覆盖 llama.cpp、FreeToken、ComfyUI（MiniMax-H3 / LTX / Qwen-Image 等）、多家 TTS 引擎。
+> 仓库即数据集名：`i10400-rtx5060ti16gb-ai-benchmarks`。消费级单卡 Windows 平台上各类本地 AI 模型的**实测性能数据集**：LLM 文本生成、文生图、视频生成、TTS/音乐。所有数字均为本机真实跑测记录（2026-08），覆盖 llama.cpp、FreeToken、ComfyUI（MiniMax-H3 / LTX / Qwen-Image 等）、多家 TTS 引擎。
 
 ## 测试平台
 
