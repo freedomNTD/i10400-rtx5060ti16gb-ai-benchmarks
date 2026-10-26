@@ -1,6 +1,6 @@
 # 02 · 文生图 / 图像编辑
 
-ComfyUI v0.33.x（torch 2.8+cu128），RTX 5060 Ti 16GB。画质判定 = 本地 VLM（Qwen3.8-27B 视觉）盲评或人眼终判。
+ComfyUI v0.33.x–v0.42.5（torch 2.8+cu128 / 2.9.1+cu130），RTX 5060 Ti 16GB。画质判定 = 本地 VLM（Qwen3.8-27B 视觉）盲评或人眼终判。
 
 ## Qwen-Image-2512 fp8 —— 步数阶梯 A/B
 
@@ -22,6 +22,26 @@ ComfyUI v0.33.x（torch 2.8+cu128），RTX 5060 Ti 16GB。画质判定 = 本地 
 | GGUF Q5_K_M（15GB，UnetLoaderGGUF） | 187s（**慢 60%**） | 15049 MiB（-0.7G） | 盲评持平 |
 
 结论：质量无差但 fp8 走原生 tensor core 快得多；GGUF 只在小显存或多模型同挂场景有价值。
+
+## Qwen-Image-2.1 int8 —— Windows 11 vs Linux Mint（原生 40 步 1024p）
+
+条件：Qwen-Image-2.1 base int8（`qwen_image_2.1_int8_convrot` + `qwen3vl_8b_int8_convrot`），原生完整管线，**不挂 BlockCache/Spectrum**；1024×1024、40 步、cfg 1.0、euler/simple、`--use-ck-attention`；同 prompt、同 seed 43–46；预热 1 次不计。两边使用同一批模型文件、同一份 ComfyUI 源码与 bench 脚本。
+
+| 环境 | 功耗墙 | 4 次热态（墙钟） | 服务端中位数 | GPU 采样 |
+|------|-------:|-----------------|-------------:|----------|
+| Windows 11 IoT LTSC 24H2 / 驱动 621.01 | 150W | 23.26–23.33s | **22.645s** | p95 150.2W / SM 2797MHz / 69.2°C |
+| Mint 22.3 / 驱动 615.71.09（默认） | 180W | 22.05s ×4 | **21.545s** | p95 180.1W / SM 2797MHz / 74°C |
+| Mint 22.3 / 驱动 615.71.09（限 150W） | 150W | 23.05s ×4 | **22.64s** | p95 150.1W / SM 2632MHz / 70°C |
+
+软件：ComfyUI v0.42.5（两边同源）、torch 2.9.1+cu130、comfy-kitchen 0.2.39；Windows 驱动 621.01，Mint 驱动 615.71.09（Ubuntu 源内 615 分支；NVIDIA 官网 NFB 615.78.08 未进源）。
+
+**结论**
+
+- **同 150W 打平**：Windows 服务端中位数 22.645s，Mint 22.64s，差 0.02%，在噪声内。墙钟 Mint 看起来快 0.25s，主要是脚本 1s 轮询/队列误差；服务端 execution 时间更准。
+- **默认 180W 的优势来自功耗墙**：Mint 21.545s 比 Windows 150W 的 22.645s 快 4.86%，不是 OS 本身快 5%。
+- **升级没有提速**：0.39.1→0.42.5 后 Windows 基本不变（-0.3%）；Mint 从 0.39.1+595.99.02 的 22.47s@150W 变成 0.42.5+615.71.09 的 22.64s@150W，慢约 0.76%；180W 下也从 21.41s 变成 21.545s（-0.63%）。从结果看，0.42.5 的改动没有改善这条 int8/ck-attention 热路径。
+- **质量一致**：两边同 seed 输出均 1024×1024，跨系统相关系数 1.0000、平均绝对差 0.11–0.14/255，基本逐像素一致，说明对比的是同一模型/同一管线。
+- 冷启动参考：Windows 50.3s、Mint 47.1s（含模型加载，单次，不作主指标）。
 
 ## Z-Image-Turbo 在 sm_120 上的兼容性实录
 
